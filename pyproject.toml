@@ -1,10 +1,10 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
 name = "appfirewall-fastapi"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Origin-side abuse signal middleware for FastAPI apps behind Cloudflare. Part of AppFirewall by Sireto."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -49,6 +49,9 @@ Homepage = "https://appfirewall.io"
 Documentation = "https://appfirewall.io/docs"
 Repository = "https://github.com/sireto/appfirewall-fastapi"
 Issues = "https://github.com/sireto/appfirewall-fastapi/issues"
+
+[tool.hatch.version]
+source = "vcs"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/appfirewall_fastapi"]
