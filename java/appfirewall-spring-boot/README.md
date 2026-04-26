@@ -4,10 +4,9 @@ Origin-side abuse-signal middleware for Spring Boot apps behind Cloudflare.
 Sibling of [`appfirewall-fastapi`](../../python/appfirewall-fastapi/) in the
 [`appfirewall-sdk`](../../) monorepo.
 
-> **Status:** v0.1 in progress &mdash; full servlet integration is wired
-> end-to-end (filter, autoconfig, `AppFirewall.record`, real
-> `@SpringBootTest`). Reactive WebFilter, health/metrics, and the CF range
-> 24 h refresh are still TODO.
+> **Status:** v0.1 in progress &mdash; servlet **and** reactive filters
+> wired, plus Actuator health and Micrometer metrics. Outstanding:
+> Cloudflare range 24 h refresh and the Maven Central publish workflow.
 
 ## Reading order
 
@@ -83,22 +82,21 @@ once locally to generate it, or use a system-installed `gradle 8.x`.)
 | `AppFirewallProperties` | ✅ | `@ConfigurationProperties("appfirewall")` |
 | `AppFirewallAutoConfiguration` | ✅ | bean wiring + filter ordering |
 | End-to-end `@SpringBootTest` | ✅ | drives traffic, asserts NDJSON output |
-| `AppFirewallWebFilter` (reactive) | ⏳ | Reactor `Context` propagation |
-| Health + Metrics | ⏳ | Actuator + Micrometer |
+| `AppFirewallWebFilter` (reactive) | ✅ | `WebFilter`; HTTP events; v0.1 caveat on `record()` in operators |
+| `AppFirewallHealthIndicator` | ✅ | UP / OUT_OF_SERVICE; never DOWN |
+| `AppFirewallMetrics` (Micrometer) | ✅ | gauges for buffer + last-ship status |
 | CF ranges 24 h refresh | ⏳ | `ScheduledExecutorService` + HttpClient |
+| Maven Central publish workflow | ⏳ | analogue to `python-fastapi-publish.yml` |
 
-Servlet integration is complete. Remaining work:
+Remaining work for v0.1:
 
-1. Reactive `AppFirewallWebFilter` &mdash; `WebFilter` writing the
-   `RequestContext` into Reactor's `Context`. Spec §6.4 calls out the
-   `flatMap`-context-propagation caveat; document it, don't try to magic-thread.
-2. Actuator `HealthIndicator` &mdash; `UP` when breaker is CLOSED or
-   HALF_OPEN, `OUT_OF_SERVICE` when OPEN, never `DOWN`. Plus Micrometer
-   counters listed in spec §4.3.
-3. `CloudflareRangeRegistry` 24-hour background refresh
+1. `CloudflareRangeRegistry` 24-hour background refresh
    (`ScheduledExecutorService` + `HttpClient`; fail-soft).
-4. Maven Central publishing pipeline (analogous to the Python SDK's
+2. Maven Central publishing pipeline (analogous to the Python SDK's
    `python-fastapi-publish.yml` workflow).
+3. Bring the open spec questions to a decision (Reactor `Context`
+   propagation for `AppFirewall.record(...)` in operators &mdash; v0.1+ via
+   a `Mono`-returning helper, or wait for `context-propagation` adoption).
 
 ## License
 

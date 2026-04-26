@@ -13,6 +13,9 @@ import io.appfirewall.core.ratelimit.RateLimiter;
 import io.appfirewall.core.ratelimit.SlidingWindowLimiter;
 import io.appfirewall.spring.context.RequestContextHolder;
 import io.appfirewall.spring.context.ServletRequestContextHolderStrategy;
+import io.appfirewall.spring.health.AppFirewallHealthIndicator;
+import io.appfirewall.spring.metrics.AppFirewallMetrics;
+import io.appfirewall.spring.reactive.AppFirewallWebFilter;
 import io.appfirewall.spring.servlet.AppFirewallFilter;
 
 import org.springframework.beans.factory.DisposableBean;
@@ -175,6 +178,41 @@ public class AppFirewallAutoConfiguration {
             reg.setOrder(Ordered.HIGHEST_PRECEDENCE + 100);
             reg.addUrlPatterns("/*");
             return reg;
+        }
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    @ConditionalOnClass(org.springframework.web.server.WebFilter.class)
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
+    public static class ReactiveConfig {
+
+        @Bean
+        @org.springframework.core.annotation.Order(Ordered.HIGHEST_PRECEDENCE + 100)
+        public AppFirewallWebFilter appFirewallWebFilter(Client client) {
+            return new AppFirewallWebFilter(client);
+        }
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    @ConditionalOnClass(org.springframework.boot.actuate.health.HealthIndicator.class)
+    public static class ActuatorConfig {
+
+        @Bean
+        public AppFirewallHealthIndicator appFirewallHealthIndicator(Client client) {
+            return new AppFirewallHealthIndicator(client);
+        }
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    @ConditionalOnClass(io.micrometer.core.instrument.MeterRegistry.class)
+    public static class MetricsConfig {
+
+        @Bean
+        public AppFirewallMetrics appFirewallMetrics(
+                Client client,
+                io.micrometer.core.instrument.MeterRegistry registry
+        ) {
+            return new AppFirewallMetrics(client, registry);
         }
     }
 }

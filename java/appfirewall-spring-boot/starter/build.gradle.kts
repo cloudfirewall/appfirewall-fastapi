@@ -12,6 +12,9 @@ dependencies {
     compileOnly("org.springframework.boot:spring-boot:$springBootVersion")
     compileOnly("org.springframework.boot:spring-boot-autoconfigure:$springBootVersion")
     compileOnly("org.springframework.boot:spring-boot-actuator-autoconfigure:$springBootVersion")
+    // Pulled in so the compiler can resolve @JsonInclude / @JsonProperty
+    // annotations referenced on Spring Boot Actuator's Health/Status types.
+    compileOnly("com.fasterxml.jackson.core:jackson-annotations:2.18.2")
     compileOnly("io.micrometer:micrometer-core:1.14.1")
     compileOnly("jakarta.servlet:jakarta.servlet-api:$jakartaServletVersion")
     compileOnly("org.springframework:spring-webflux:$springWebfluxVersion")
@@ -25,5 +28,6 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-web:$springBootVersion")
     testImplementation("org.springframework.boot:spring-boot-starter-webflux:$springBootVersion")
     testImplementation("org.springframework.boot:spring-boot-starter-actuator:$springBootVersion")
+    testImplementation("io.projectreactor:reactor-test:3.7.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
