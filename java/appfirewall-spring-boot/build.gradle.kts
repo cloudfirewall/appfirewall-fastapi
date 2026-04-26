@@ -55,7 +55,7 @@ subprojects {
                     name.set(project.name)
                     description.set("Origin-side abuse signal middleware for Spring Boot. "
                             + "Part of the AppFirewall platform by Sireto.")
-                    url.set("https://github.com/sireto/appfirewall-sdk")
+                    url.set("https://github.com/cloudfirewall/appfirewall-sdk")
                     licenses {
                         license {
                             name.set("Apache License, Version 2.0")
@@ -70,9 +70,9 @@ subprojects {
                         }
                     }
                     scm {
-                        connection.set("scm:git:https://github.com/sireto/appfirewall-sdk.git")
-                        developerConnection.set("scm:git:ssh://github.com/sireto/appfirewall-sdk.git")
-                        url.set("https://github.com/sireto/appfirewall-sdk")
+                        connection.set("scm:git:https://github.com/cloudfirewall/appfirewall-sdk.git")
+                        developerConnection.set("scm:git:ssh://github.com/cloudfirewall/appfirewall-sdk.git")
+                        url.set("https://github.com/cloudfirewall/appfirewall-sdk")
                     }
                 }
             }

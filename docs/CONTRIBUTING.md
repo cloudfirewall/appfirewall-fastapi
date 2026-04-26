@@ -9,8 +9,8 @@ process. For the "what" and "why" of this project, read
 ## Setup
 
 ```bash
-git clone https://github.com/sireto/appfirewall-fastapi.git
-cd appfirewall-fastapi
+git clone https://github.com/cloudfirewall/appfirewall-sdk.git
+cd appfirewall-sdk/python/appfirewall-fastapi
 pip install -e ".[dev]"
 ```
 

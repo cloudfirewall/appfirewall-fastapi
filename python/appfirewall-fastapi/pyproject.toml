@@ -47,8 +47,8 @@ dev = [
 [project.urls]
 Homepage = "https://appfirewall.io"
 Documentation = "https://appfirewall.io/docs"
-Repository = "https://github.com/sireto/appfirewall-fastapi"
-Issues = "https://github.com/sireto/appfirewall-fastapi/issues"
+Repository = "https://github.com/cloudfirewall/appfirewall-sdk"
+Issues = "https://github.com/cloudfirewall/appfirewall-sdk/issues"
 
 [tool.hatch.version]
 source = "vcs"
