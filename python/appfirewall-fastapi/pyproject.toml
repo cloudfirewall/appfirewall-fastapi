@@ -62,13 +62,12 @@ tag-pattern = '^python-fastapi-v(?P<version>[^-]+)$'
 root = "../.."
 search_parent_directories = true
 # Restrict git describe to this SDK's tag prefix so unrelated tags from
-# sibling SDKs (or legacy `v*` tags) don't confuse version derivation.
+# sibling SDKs don't confuse version derivation. Legacy `v0.1.x` tags
+# have been aliased to `python-fastapi-v0.1.x` so they remain anchors.
 git_describe_command = [
     "git", "describe", "--dirty", "--tags", "--long",
     "--match", "python-fastapi-v*",
 ]
-# Used when no matching tag exists yet (first release pending).
-fallback_version = "0.0.0+local"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/appfirewall_fastapi"]
