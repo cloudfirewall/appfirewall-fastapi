@@ -262,16 +262,30 @@ class EventBuffer:
                 # bad request shape) — retrying won't help. Count as success
                 # from the breaker's perspective so we don't go OPEN and
                 # stop sending; count as "don't retry this batch" by just
-                # dropping it. Log once.
-                _LOG.debug(
-                    "appfirewall: ingest returned %s; dropping batch",
+                # dropping it.
+                _LOG.warning(
+                    "appfirewall: ingest at %s returned %s; dropping %d events",
+                    self._endpoint,
                     resp.status_code,
+                    len(batch),
                 )
                 self._breaker.record_success()
             else:
                 # 5xx, 429, or timeout-as-exception path below.
+                _LOG.warning(
+                    "appfirewall: ingest at %s returned %s; %d events will be retried",
+                    self._endpoint,
+                    resp.status_code,
+                    len(batch),
+                )
                 self._breaker.record_failure()
-        except Exception:  # noqa: BLE001
+        except Exception as exc:  # noqa: BLE001
+            _LOG.warning(
+                "appfirewall: failed to ship %d events to %s: %s",
+                len(batch),
+                self._endpoint,
+                exc,
+            )
             self._breaker.record_failure()
 
     async def _flush_local(self, batch: list[dict[str, Any]]) -> None:
