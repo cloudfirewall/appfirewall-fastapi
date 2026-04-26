@@ -117,6 +117,7 @@ public final class Client {
 
     public void shutdown() {
         if (shipper != null) shipper.shutdown();
+        if (cfRanges != null) cfRanges.stop();
     }
 
     // Test/diagnostic accessors (package-private would be ideal but Spring

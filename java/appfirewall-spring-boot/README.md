@@ -4,9 +4,11 @@ Origin-side abuse-signal middleware for Spring Boot apps behind Cloudflare.
 Sibling of [`appfirewall-fastapi`](../../python/appfirewall-fastapi/) in the
 [`appfirewall-sdk`](../../) monorepo.
 
-> **Status:** v0.1 in progress &mdash; servlet **and** reactive filters
-> wired, plus Actuator health and Micrometer metrics. Outstanding:
-> Cloudflare range 24 h refresh and the Maven Central publish workflow.
+> **Status:** v0.1 feature-complete. Servlet **and** reactive filters,
+> Actuator health, Micrometer metrics, the 24-hour Cloudflare-range
+> refresh, and the Maven Central publish pipeline are all wired. Pending
+> the first release: Sonatype namespace registration for `io.appfirewall`
+> and a decision on the open spec questions.
 
 ## Reading order
 
@@ -85,18 +87,25 @@ once locally to generate it, or use a system-installed `gradle 8.x`.)
 | `AppFirewallWebFilter` (reactive) | ✅ | `WebFilter`; HTTP events; v0.1 caveat on `record()` in operators |
 | `AppFirewallHealthIndicator` | ✅ | UP / OUT_OF_SERVICE; never DOWN |
 | `AppFirewallMetrics` (Micrometer) | ✅ | gauges for buffer + last-ship status |
-| CF ranges 24 h refresh | ⏳ | `ScheduledExecutorService` + HttpClient |
-| Maven Central publish workflow | ⏳ | analogue to `python-fastapi-publish.yml` |
+| CF ranges 24 h refresh | ✅ | scheduled executor; fetcher seam for tests |
+| Maven Central publish workflow | ✅ | tag-prefix gated; Sonatype + GPG via secrets |
 
-Remaining work for v0.1:
+Pre-release tasks (not v0.1 code work):
 
-1. `CloudflareRangeRegistry` 24-hour background refresh
-   (`ScheduledExecutorService` + `HttpClient`; fail-soft).
-2. Maven Central publishing pipeline (analogous to the Python SDK's
-   `python-fastapi-publish.yml` workflow).
-3. Bring the open spec questions to a decision (Reactor `Context`
-   propagation for `AppFirewall.record(...)` in operators &mdash; v0.1+ via
-   a `Mono`-returning helper, or wait for `context-propagation` adoption).
+1. Register the `io.appfirewall` namespace at
+   [Sonatype Central](https://central.sonatype.com/) and verify ownership.
+2. Add the GitHub repository secrets used by the publish workflow:
+   `OSSRH_USERNAME`, `OSSRH_PASSWORD`, `SIGNING_KEY`, `SIGNING_PASSWORD`.
+3. Create a `maven-central` GitHub environment with required reviewers so
+   each release goes through a manual gate.
+4. Decide the spec's Reactor-`Context`-propagation question (open question
+   1) &mdash; ship a `Mono`-returning `AppFirewall.recordMono(...)` in
+   v0.1+ vs. wait for `io.micrometer:context-propagation` adoption.
+
+To cut the first release once the above is done: tag
+`java-spring-boot-vX.Y.Z`, publish a GitHub Release. The
+`java-spring-boot-publish.yml` workflow will run tests, build, sign, and
+publish to Maven Central.
 
 ## License
 

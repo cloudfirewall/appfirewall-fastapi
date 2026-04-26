@@ -13,7 +13,7 @@ Part of the **[AppFirewall][af]** platform by Sireto.
 | Status | SDK | Path | Package |
 |---|---|---|---|
 | ✅ Shipping (alpha) | Python / FastAPI | [`python/appfirewall-fastapi/`](./python/appfirewall-fastapi/) | [`appfirewall-fastapi`](https://pypi.org/p/appfirewall-fastapi) |
-| 🚧 In progress | Java / Spring Boot | [`java/appfirewall-spring-boot/`](./java/appfirewall-spring-boot/) | `io.appfirewall:appfirewall-spring-boot-starter` |
+| ✅ v0.1 ready (unreleased) | Java / Spring Boot | [`java/appfirewall-spring-boot/`](./java/appfirewall-spring-boot/) | `io.appfirewall:appfirewall-spring-boot-starter` |
 | 🔮 Planned | Python / Django, Node / Express, Node / Hono, Ruby / Rails | — | — |
 
 The **FastAPI SDK is the reference implementation.** When behaviour is
@@ -72,6 +72,7 @@ monorepo can ship one SDK without affecting another:
 | SDK | Tag prefix | Example |
 |---|---|---|
 | `appfirewall-fastapi` | `python-fastapi-v` | `python-fastapi-v0.2.0` |
+| `appfirewall-spring-boot` | `java-spring-boot-v` | `java-spring-boot-v0.1.0` |
 
 The release workflow in `.github/workflows/python-fastapi-publish.yml`
 fires on a GitHub Release whose tag matches that prefix, runs the SDK's

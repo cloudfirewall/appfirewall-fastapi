@@ -82,6 +82,7 @@ public class AppFirewallAutoConfiguration {
         );
 
         CloudflareRangeRegistry cfRanges = new CloudflareRangeRegistry();
+        cfRanges.start();  // schedules the 24h background refresh; fail-soft.
         IpResolver ipResolver = new IpResolver(
                 cfRanges,
                 new TrustedProxyConfig(config.trustedProxies())

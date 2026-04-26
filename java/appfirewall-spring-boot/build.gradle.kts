@@ -7,14 +7,15 @@ plugins {
 
 allprojects {
     group = "io.appfirewall"
-    // Version is wired from CI on tagged releases; SNAPSHOT for local dev.
-    // The Python SDK uses hatch-vcs; for Java we'll wire axion-release or
-    // nebula-release in the publishing pass. Until then, snapshot.
-    version = "0.1.0-SNAPSHOT"
+    // Resolved at publish time from the `appfirewallVersion` Gradle property
+    // (set by CI from the git tag), defaulting to a SNAPSHOT for local builds.
+    version = (findProperty("appfirewallVersion") as String?) ?: "0.1.0-SNAPSHOT"
 }
 
 subprojects {
     apply(plugin = "java-library")
+    apply(plugin = "maven-publish")
+    apply(plugin = "signing")
 
     extensions.configure<JavaPluginExtension> {
         toolchain {
@@ -38,5 +39,73 @@ subprojects {
     tasks.withType<JavaCompile>().configureEach {
         options.encoding = "UTF-8"
         options.compilerArgs.addAll(listOf("-Xlint:all", "-Werror"))
+    }
+
+    // Javadoc on a multi-module Spring project surfaces a lot of unresolved
+    // references when Spring is compileOnly. Don't fail the build on those.
+    tasks.withType<Javadoc>().configureEach {
+        (options as? StandardJavadocDocletOptions)?.addStringOption("Xdoclint:none", "-quiet")
+    }
+
+    extensions.configure<PublishingExtension> {
+        publications {
+            create<MavenPublication>("maven") {
+                from(components["java"])
+                pom {
+                    name.set(project.name)
+                    description.set("Origin-side abuse signal middleware for Spring Boot. "
+                            + "Part of the AppFirewall platform by Sireto.")
+                    url.set("https://github.com/sireto/appfirewall-sdk")
+                    licenses {
+                        license {
+                            name.set("Apache License, Version 2.0")
+                            url.set("https://www.apache.org/licenses/LICENSE-2.0")
+                        }
+                    }
+                    developers {
+                        developer {
+                            id.set("sireto")
+                            name.set("Sireto")
+                            url.set("https://appfirewall.io")
+                        }
+                    }
+                    scm {
+                        connection.set("scm:git:https://github.com/sireto/appfirewall-sdk.git")
+                        developerConnection.set("scm:git:ssh://github.com/sireto/appfirewall-sdk.git")
+                        url.set("https://github.com/sireto/appfirewall-sdk")
+                    }
+                }
+            }
+        }
+
+        repositories {
+            maven {
+                name = "ossrh"
+                url = uri(
+                        if (version.toString().endsWith("SNAPSHOT"))
+                            "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                        else
+                            "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                )
+                credentials {
+                    username = (findProperty("ossrhUsername") as String?)
+                            ?: System.getenv("OSSRH_USERNAME") ?: ""
+                    password = (findProperty("ossrhPassword") as String?)
+                            ?: System.getenv("OSSRH_PASSWORD") ?: ""
+                }
+            }
+        }
+    }
+
+    extensions.configure<SigningExtension> {
+        val signingKey = System.getenv("SIGNING_KEY")
+        val signingPassword = System.getenv("SIGNING_PASSWORD")
+        if (!signingKey.isNullOrBlank()) {
+            useInMemoryPgpKeys(signingKey, signingPassword ?: "")
+            sign(extensions.getByType<PublishingExtension>().publications["maven"])
+        } else {
+            // No key configured (local dev). Skip signing; CI will sign.
+            isRequired = false
+        }
     }
 }

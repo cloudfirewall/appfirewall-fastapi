@@ -1,0 +1,83 @@
+name: Publish appfirewall-spring-boot to Maven Central
+
+# Publishes the Java/Spring Boot SDK on a tagged GitHub Release whose tag
+# starts with `java-spring-boot-v` (e.g. `java-spring-boot-v0.2.0`).
+# Per-SDK tag prefixes keep release lines for different SDKs independent.
+#
+# One-time setup before the first release:
+#   1. Register the `io.appfirewall` namespace at https://central.sonatype.org/
+#   2. Add these GitHub repository secrets:
+#        - OSSRH_USERNAME       Sonatype Central token username
+#        - OSSRH_PASSWORD       Sonatype Central token password
+#        - SIGNING_KEY          ASCII-armored GPG private key
+#        - SIGNING_PASSWORD     passphrase for the key
+#   3. Create a `maven-central` GitHub environment with required reviewers
+#      so a human approves each release.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: java/appfirewall-spring-boot
+
+jobs:
+  verify:
+    name: Run checks
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'java-spring-boot-v')
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Test
+        run: gradle test --no-daemon
+
+  publish:
+    name: Publish to Maven Central
+    needs: verify
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' && startsWith(github.event.release.tag_name, 'java-spring-boot-v')
+    environment:
+      name: maven-central
+      url: https://central.sonatype.com/artifact/io.appfirewall/appfirewall-spring-boot-starter
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Derive version from tag
+        id: version
+        run: |
+          tag="${GITHUB_REF##*/}"
+          version="${tag#java-spring-boot-v}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Publish
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+        run: gradle publish -PappfirewallVersion=${{ steps.version.outputs.version }} --no-daemon
